@@ -20,7 +20,7 @@ def camera_setup():
                 start_time = time.time()
 
                 # Loop for 3 seconds
-                while (time.time() - start_time) < 3:
+                while (time.time() - start_time) < 1:
                     ret, frame = cap.read()
                     if not ret:
                         break

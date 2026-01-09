@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import camera_setup
+import hand_tracker
 from hand_tracker import HandTracker
 
 
@@ -21,7 +22,7 @@ def main():
             break
 
         # Flip the image so it acts like a mirror
-        # img = cv2.flip(img, 1)
+        img = cv2.flip(img, 1)
 
         # 3. Use the Tracker
         # We pass the image to the scanner, it draws on it and returns data
@@ -52,7 +53,13 @@ def main():
             thumb_y = int(thumb_tip.y * h)
 
             # C. Verify it works by printing or drawing
-            print(f"Index Finger at: {idx_x}, {idx_y}")
+            # print(f"Index Finger at: {idx_x}, {idx_y}")
+            if HandTracker.fingers_state(hand_landmarks) == 0:
+                print("closed")
+            elif HandTracker.fingers_state(hand_landmarks) == 1:
+                print("opened")
+            elif HandTracker.fingers_state(hand_landmarks) == 2:
+                print("pinched")
 
             # Draw circles on those specific points so you know you have the right ones
             cv2.circle(img, (idx_x, idx_y), 15, (255, 0, 0), cv2.FILLED)  # Blue for Index
