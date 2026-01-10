@@ -47,4 +47,6 @@ def camera_setup():
     print("Which camera do you want to use?")
     camera_index = int(input())
     cap = cv2.VideoCapture(camera_index)
-    return cap
+
+    camera_info = [cap, screen_w, screen_h]
+    return camera_info

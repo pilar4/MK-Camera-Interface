@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pyautogui
 import camera_setup
 import hand_tracker
 from hand_tracker import HandTracker
@@ -7,7 +8,10 @@ from hand_tracker import HandTracker
 
 def main():
     # 1. Setup Camera
-    cap = camera_setup.camera_setup()
+    camera_info = camera_setup.camera_setup()
+    cap = camera_info[0]
+    screen_w = camera_info[1]
+    screen_h = camera_info[2]
     if cap is None:
         return
 
@@ -52,14 +56,19 @@ def main():
             thumb_x = int(thumb_tip.x * w)
             thumb_y = int(thumb_tip.y * h)
 
+
+
             # C. Verify it works by printing or drawing
             # print(f"Index Finger at: {idx_x}, {idx_y}")
             if HandTracker.fingers_state(hand_landmarks) == 0:
                 print("closed")
             elif HandTracker.fingers_state(hand_landmarks) == 1:
+                # pyautogui.moveTo(idx_x, idx_y)
                 print("opened")
             elif HandTracker.fingers_state(hand_landmarks) == 2:
                 print("pinched")
+
+            # print(screen_h, screen_w)
 
             # Draw circles on those specific points so you know you have the right ones
             cv2.circle(img, (idx_x, idx_y), 15, (255, 0, 0), cv2.FILLED)  # Blue for Index
