@@ -57,22 +57,28 @@ def main():
             thumb_y = int(thumb_tip.y * h)
 
 
+            # Hand state logic
+            state = HandTracker.fingers_state(hand_landmarks)
 
-            # C. Verify it works by printing or drawing
-            # print(f"Index Finger at: {idx_x}, {idx_y}")
-            if HandTracker.fingers_state(hand_landmarks) == 0:
+            if state == 0:
                 print("closed")
-            elif HandTracker.fingers_state(hand_landmarks) == 1:
-                # pyautogui.moveTo(idx_x, idx_y)
+
+            elif state == 1:
+                # OPEN HAND → MOVE CURSOR
+
+                # Scale camera coords to screen coords
+                screen_x = np.interp(idx_x, (0, w), (0, screen_w))
+                screen_y = np.interp(idx_y, (0, h), (0, screen_h))
+
+                pyautogui.moveTo(screen_x, screen_y)
                 print("opened")
-            elif HandTracker.fingers_state(hand_landmarks) == 2:
+
+            elif state == 2:
                 print("pinched")
 
-            # print(screen_h, screen_w)
-
-            # Draw circles on those specific points so you know you have the right ones
-            cv2.circle(img, (idx_x, idx_y), 15, (255, 0, 0), cv2.FILLED)  # Blue for Index
-            cv2.circle(img, (thumb_x, thumb_y), 15, (0, 255, 0), cv2.FILLED)  # Green for Thumb
+            # Debug visuals
+            cv2.circle(img, (idx_x, idx_y), 15, (255, 0, 0), cv2.FILLED)
+            cv2.circle(img, (thumb_x, thumb_y), 15, (0, 255, 0), cv2.FILLED)
 
         # 5. Show Image
         cv2.imshow("M&K Interface", img)
@@ -86,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
