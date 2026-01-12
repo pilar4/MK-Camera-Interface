@@ -2,86 +2,87 @@ import cv2
 import numpy as np
 import pyautogui
 import camera_setup
-import hand_tracker
+from cursor import Cursor
 from hand_tracker import HandTracker
 
 
 def main():
-    # 1. Setup Camera
+
+    """SETUP"""
+    # Camera
     camera_info = camera_setup.camera_setup()
     cap = camera_info[0]
     screen_w = camera_info[1]
     screen_h = camera_info[2]
+
     if cap is None:
         return
 
-    # 2. Setup Hand Tracker (Creates the class)
+    # Hand Tracker
     tracker = HandTracker()
-
     print("System Ready. Press 'q' to quit.")
 
+    # Cursor
+    cursor = Cursor()
+
+
+
+
     while True:
+
         success, img = cap.read()
         if not success:
             break
 
-        # Flip the image so it acts like a mirror
+        # Mirror image
         img = cv2.flip(img, 1)
 
-        # 3. Use the Tracker
-        # We pass the image to the scanner, it draws on it and returns data
+        # 3. Scan hands
         results = tracker.scan_hands(img)
 
-        # 4. Check if we found a hand to do specific logic
         if results.multi_hand_landmarks:
-            # Get the first hand detected (since max_hands=1)
             hand_landmarks = results.multi_hand_landmarks[0]
 
-            # --- PARSING THE DATA ---
+            # Get landmarks
+            index_tip = hand_landmarks.landmark[8]   # Index finger tip
+            thumb_tip = hand_landmarks.landmark[4]   # Thumb tip
 
-            # A. Get the RAW coordinates (0.0 to 1.0)
-            # Landmark 8 is the Index Finger Tip
-            index_tip = hand_landmarks.landmark[8]
-
-            # Landmark 4 is the Thumb Tip
-            thumb_tip = hand_landmarks.landmark[4]
-
-            # B. Convert to PIXELS (0 to 1920, etc.)
-            # We need the image height (h) and width (w) to do the math
+            # Image size
             h, w, _ = img.shape
+            # Camera offset or smth like that
+            w_offset = 0.2 * w
+            h_offset = 0.3 * h
 
+
+            # Convert to camera pixels
             idx_x = int(index_tip.x * w)
             idx_y = int(index_tip.y * h)
 
             thumb_x = int(thumb_tip.x * w)
             thumb_y = int(thumb_tip.y * h)
 
-
             # Hand state logic
-            state = HandTracker.fingers_state(hand_landmarks)
+            handstate = HandTracker.fingers_state(hand_landmarks)
 
-            if state == 0:
-                print("closed")
-
-            elif state == 1:
+            if handstate != 0:
                 # OPEN HAND → MOVE CURSOR
 
                 # Scale camera coords to screen coords
-                screen_x = np.interp(idx_x, (0, w), (0, screen_w))
-                screen_y = np.interp(idx_y, (0, h), (0, screen_h))
+                screen_x = np.interp(idx_x, (0 + w_offset, w - w_offset), (0, screen_w))
+                screen_y = np.interp(idx_y, (0 + h_offset, h - h_offset), (0, screen_h))
 
                 pyautogui.moveTo(screen_x, screen_y)
-                print("opened")
 
-            elif state == 2:
-                print("pinched")
+                if handstate == 2:
+                    pyautogui.leftClick()
+
 
             # Debug visuals
             cv2.circle(img, (idx_x, idx_y), 15, (255, 0, 0), cv2.FILLED)
             cv2.circle(img, (thumb_x, thumb_y), 15, (0, 255, 0), cv2.FILLED)
 
-        # 5. Show Image
-        cv2.imshow("M&K Interface", img)
+        # Show window
+        cv2.imshow("Mouse and Keyboard Interface", img)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -92,4 +93,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
