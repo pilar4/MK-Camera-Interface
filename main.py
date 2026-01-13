@@ -1,15 +1,12 @@
 import cv2
-import numpy as np
-import pyautogui
 import camera_setup
 from cursor import Cursor
 from hand_tracker import HandTracker
 
 
 def main():
-
     """SETUP"""
-    # Camera
+    # 1. Camera Setup
     camera_info = camera_setup.camera_setup()
     cap = camera_info[0]
     screen_w = camera_info[1]
@@ -18,64 +15,47 @@ def main():
     if cap is None:
         return
 
-    # Hand Tracker
+    # 2. Tracker
     tracker = HandTracker()
+
+    # 3. Cursor
+    cursor = Cursor(screen_w, screen_h)
+
     print("System Ready. Press 'q' to quit.")
 
-    # Cursor
-    cursor = Cursor()
-
-
-
-
     while True:
-
         success, img = cap.read()
         if not success:
             break
 
-        # Mirror image
+        # Mirror image for natural interaction
         img = cv2.flip(img, 1)
+        h, w, _ = img.shape  # Get image dimensions
 
-        # 3. Scan hands
+        # Scan hands
         results = tracker.scan_hands(img)
 
         if results.multi_hand_landmarks:
             hand_landmarks = results.multi_hand_landmarks[0]
 
-            # Get landmarks
-            index_tip = hand_landmarks.landmark[8]   # Index finger tip
-            thumb_tip = hand_landmarks.landmark[4]   # Thumb tip
+            # Get necessary landmarks
+            index_tip = hand_landmarks.landmark[8]
+            thumb_tip = hand_landmarks.landmark[4]
 
-            # Image size
-            h, w, _ = img.shape
-            # Camera offset or smth like that
-            w_offset = 0.2 * w
-            h_offset = 0.3 * h
-
-
-            # Convert to camera pixels
+            # Convert normalized coordinates (0.0 - 1.0) to pixels
             idx_x = int(index_tip.x * w)
             idx_y = int(index_tip.y * h)
 
+            # (Optional) Thumb coords for drawing
             thumb_x = int(thumb_tip.x * w)
             thumb_y = int(thumb_tip.y * h)
 
-            # Hand state logic
+            # Get Hand State (0=Idle, 1=Move, 2=Click)
             handstate = HandTracker.fingers_state(hand_landmarks)
 
-            if handstate != 0:
-                # OPEN HAND → MOVE CURSOR
-
-                # Scale camera coords to screen coords
-                screen_x = np.interp(idx_x, (0 + w_offset, w - w_offset), (0, screen_w))
-                screen_y = np.interp(idx_y, (0 + h_offset, h - h_offset), (0, screen_h))
-
-                pyautogui.moveTo(screen_x, screen_y)
-
-                if handstate == 2:
-                    pyautogui.leftClick()
-
+            # --- DELEGATE TO CURSOR CLASS ---
+            # We pass the raw data; the class handles mapping and clicking
+            cursor.move_and_click(idx_x, idx_y, handstate, w, h)
 
             # Debug visuals
             cv2.circle(img, (idx_x, idx_y), 15, (255, 0, 0), cv2.FILLED)
