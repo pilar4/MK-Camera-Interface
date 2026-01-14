@@ -1,7 +1,7 @@
 import cv2
-import camera_setup
-from cursor import Cursor
-from hand_tracker import HandTracker
+from src_cursor import camera_setup
+from src_cursor.cursor import Cursor
+from src_cursor.hand_tracker import HandTracker
 
 
 def main():
@@ -20,6 +20,7 @@ def main():
 
     # 3. Cursor
     cursor = Cursor(screen_w, screen_h)
+
 
     print("System Ready. Press 'q' to quit.")
 

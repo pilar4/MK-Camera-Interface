@@ -28,9 +28,8 @@ class HandTracker:
         return results
 
 
-
     @staticmethod
-    def finger_extended(hand, tip):
+    def _finger_extended(hand, tip):
         return hand.landmark[tip].y < hand.landmark[tip - 2].y
 
     @staticmethod
@@ -50,9 +49,9 @@ class HandTracker:
 
         pinch_close = pinch_dist / hand_scale < 0.35
 
-        middle_up = HandTracker.finger_extended(hand_landmarks, 12)
-        ring_up   = HandTracker.finger_extended(hand_landmarks, 16)
-        pinky_up  = HandTracker.finger_extended(hand_landmarks, 20)
+        middle_up = HandTracker._finger_extended(hand_landmarks, 12)
+        ring_up   = HandTracker._finger_extended(hand_landmarks, 16)
+        pinky_up  = HandTracker._finger_extended(hand_landmarks, 20)
 
         not_fist = middle_up or ring_up or pinky_up
 
@@ -69,7 +68,7 @@ class HandTracker:
 
         # skips index for quality, but we will se if its necessary
         for tip in [12, 16, 20]:
-            if not HandTracker.finger_extended(hand_landmarks, tip):
+            if not HandTracker._finger_extended(hand_landmarks, tip):
                 return 0
 
         return 1
