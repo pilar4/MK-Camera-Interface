@@ -1,10 +1,8 @@
 import speech_recognition as sr
-import pyttsx3
 import time
 
-# Initialize recognizer and TTS engine once
+# Initialize recognizer
 r = sr.Recognizer()
-#engine = pyttsx3.init()
 
 # Keyboard setup
 from pynput.keyboard import Key, Controller
@@ -48,12 +46,10 @@ with sr.Microphone() as source:
             break
 
 import speech_recognition as sr
-import pyttsx3
 import time
 
 # Initialize recognizer and TTS engine once
 r = sr.Recognizer()
-#engine = pyttsx3.init()
 
 # Keyboard setup
 from pynput.keyboard import Key, Controller
