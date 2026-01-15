@@ -13,12 +13,12 @@ def typeKey(text):
     for char in text:
         keyboard.press(char)
         keyboard.release(char)
-        time.sleep(0.2)
+        time.sleep(0.12)
     return
 
 # Use microphone
 with sr.Microphone() as source:
-    time.sleep(1)
+    time.sleep(0.5)
     print("Calibrating microphone...")
     r.adjust_for_ambient_noise(source, duration=0.5)
     print("Listening...")
