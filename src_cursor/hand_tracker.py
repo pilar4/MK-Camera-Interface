@@ -71,4 +71,6 @@ class HandTracker:
             if not HandTracker._finger_extended(hand_landmarks, tip):
                 return 0
 
+
+
         return 1

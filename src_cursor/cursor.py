@@ -26,6 +26,10 @@ class Cursor:
         self.is_clicking = False
         self.frame_margin_w = 0.2
         self.frame_margin_h = 0.3
+        self.last_handstate = None
+        self.has_synced = False
+        self.w_sens_ratio = 0.1  # precent from edge
+        self.h_sens_ratio = 0.2
 
         pyautogui.PAUSE = 0
         pyautogui.FAILSAFE = True
@@ -36,9 +40,6 @@ class Cursor:
         self.prev_s_x = None
         self.prev_s_y = None
 
-    def set_margin(self, w, h):
-        self.frame_margin_w = w
-        self.frame_margin_h = h
 
     @staticmethod
     def _play_sound_worker():
@@ -47,12 +48,12 @@ class Cursor:
         except Exception:
             pass
 
-    def move_and_click(self, raw_x, raw_y, handstate, img_w, img_h):
-        # define the offsets
-        w_offset = self.frame_margin_w * img_w
-        h_offset = self.frame_margin_h * img_h
 
-        # map camera coordinates to screen coordinates
+    def move_and_click(self, raw_x, raw_y, handstate, img_w, img_h):
+
+        w_offset = img_w * self.w_sens_ratio
+        h_offset = img_h * self.h_sens_ratio
+
         screen_x = np.interp(raw_x, (w_offset, img_w - w_offset), (0, self.screen_w))
         screen_y = np.interp(raw_y, (h_offset, img_h - h_offset), (0, self.screen_h))
 
@@ -63,28 +64,34 @@ class Cursor:
         dt = min(dt, 0.03)  # safety clamp
 
         if handstate == 1:
-            if self.prev_s_x is None:
+            if self.prev_s_x is None or not self.has_synced:
                 self.prev_s_x = screen_x
                 self.prev_s_y = screen_y
-                self.physics.reset(screen_x, screen_y)
+
+                if not self.has_synced:
+                    self.physics.reset(screen_x, screen_y)
+                    self.has_synced = True
+                else:
+                    self.physics.unclutch()
+
+                self.last_handstate = handstate
                 return
 
             dx = screen_x - self.prev_s_x
             dy = screen_y - self.prev_s_y
 
-            # This calls the C++ update function
             true_x, true_y = self.physics.update(dx, dy, dt)
-
-            # Use raw x/y to prevent drift if needed, or physics x/y
             pyautogui.moveTo(true_x, true_y)
 
             self.prev_s_x = screen_x
             self.prev_s_y = screen_y
+
         else:
+            if self.last_handstate == 1:
+                self.physics.clutch()
             self.prev_s_x = None
             self.prev_s_y = None
 
-        # clicking
         if handstate == 2:
             if not self.is_clicking:
                 pyautogui.click()
@@ -92,3 +99,6 @@ class Cursor:
                 self.is_clicking = True
         else:
             self.is_clicking = False
+
+        self.last_handstate = handstate
+
