@@ -29,10 +29,10 @@ class Cursor:
         self.last_handstate = None
         self.has_synced = False
         self.w_sens_ratio = 0.1  # precent from edge
-        self.h_sens_ratio = 0.2
+        self.h_sens_ratio = 0.1
 
         pyautogui.PAUSE = 0
-        pyautogui.FAILSAFE = True
+        pyautogui.FAILSAFE = False
 
         self.physics = cursor_cpp.CursorPhysics()
 

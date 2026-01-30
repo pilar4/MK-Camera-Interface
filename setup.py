@@ -18,6 +18,6 @@ setup(
     version="0.1",
     ext_modules=ext_modules,
     zip_safe=False,
-    install_requires=['pybind11', 'speechrecognition', 'pynput', 'opencv-python', 'playsound', 'numpy', 'pyautogui',
-                      'mediapipe']
+    install_requires=['pybind11', 'pynput', 'opencv-python', 'playsound', 'numpy', 'pyautogui',
+                      'mediapipe', 'sounddevice', 'faster-whisper']
 )

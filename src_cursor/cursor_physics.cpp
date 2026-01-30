@@ -24,19 +24,17 @@ public:
             return py::make_tuple(pos_x, pos_y);
         }
 
-        // CLUTCH ACTIVE → ignore movement
         if (clutched) {
             return py::make_tuple(pos_x, pos_y);
         }
 
-        // First frame after unclutch
         if (!input_active) {
             input_active = true;
             vel_x = vel_y = 0.0;
             return py::make_tuple(pos_x, pos_y);
         }
 
-        // Normal physics
+
         double ax = dx * force_scale;
         double ay = dy * force_scale;
 
@@ -65,7 +63,7 @@ public:
 
     void unclutch() {
         clutched = false;
-        input_active = false; // swallow first frame
+        input_active = false;
     }
 
 

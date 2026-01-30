@@ -4,7 +4,7 @@ from src_cursor.cursor import Cursor
 from src_cursor.hand_tracker import HandTracker
 import threading
 from queue import Queue
-from speech_to_text import speech_worker, typeKey
+# from speech_to_text import speech_worker, typeKey
 
 
 def main():
@@ -21,29 +21,29 @@ def main():
 
     cursor = Cursor(screen_w, screen_h)
 
-    text_queue = Queue()
-    stop_event = threading.Event()
+    # text_queue = Queue()
+    # stop_event = threading.Event()
 
-    speech_thread = threading.Thread(
-        target=speech_worker,
-        args=(text_queue, stop_event),
-        daemon=True
-    )
-    speech_thread.start()
+    # speech_thread = threading.Thread(
+    #     target=speech_worker,
+    #     args=(text_queue, stop_event),
+    #     daemon=True
+    # )
+    # speech_thread.start()
 
 
     print("System Ready. Press 'q' to quit.")
 
     while True:
         # --- speech input ---
-        while not text_queue.empty():
-            text = text_queue.get()
-
-            if text in ("exit", "quit", "stop"):
-                stop_event.set()
-                break
-
-            typeKey(text)
+        # while not text_queue.empty():
+        #     text = text_queue.get()
+        #
+        #     if text in ("exit", "quit", "stop"):
+        #         stop_event.set()
+        #         break
+        #
+        #     typeKey(text)
 
 
 
@@ -60,7 +60,7 @@ def main():
         if results.multi_hand_landmarks:
             hand_landmarks = results.multi_hand_landmarks[0]
 
-            index_tip = hand_landmarks.landmark[8]
+            index_tip = hand_landmarks.landmark[0]
             thumb_tip = hand_landmarks.landmark[4]
 
             idx_x = int(index_tip.x * w)
@@ -77,7 +77,8 @@ def main():
 
         cv2.imshow("Mouse and Keyboard Interface", img)
 
-        if stop_event.is_set() or cv2.waitKey(1) & 0xFF == ord('q'):
+        # if stop_event.is_set() or cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
