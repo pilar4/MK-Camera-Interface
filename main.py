@@ -60,11 +60,11 @@ def main():
         if results.multi_hand_landmarks:
             hand_landmarks = results.multi_hand_landmarks[0]
 
-            index_tip = hand_landmarks.landmark[0]
-            thumb_tip = hand_landmarks.landmark[4]
+            wrist_point = hand_landmarks.landmark[0] # <---- decided to change tracking from index to wrist
+            thumb_tip = hand_landmarks.landmark[4]   # it reduced cursor jumping when clicking to almost 0 jump
 
-            idx_x = int(index_tip.x * w)
-            idx_y = int(index_tip.y * h)
+            wrist_x = int(wrist_point.x * w)
+            wrist_y = int(wrist_point.y * h)
 
             thumb_x = int(thumb_tip.x * w)
             thumb_y = int(thumb_tip.y * h)
@@ -73,7 +73,7 @@ def main():
             handstate = HandTracker.fingers_state(hand_landmarks)
 
 
-            cursor.move_and_click(idx_x, idx_y, handstate, w, h)
+            cursor.move_and_click(wrist_x, wrist_y, handstate, w, h)
 
         cv2.imshow("Mouse and Keyboard Interface", img)
 
