@@ -38,6 +38,7 @@ class HandTracker:
         # 1 - opened
         # 2 - pinch
 
+
         # ---------- PINCH ----------
         thumb = hand_landmarks.landmark[4]
         index = hand_landmarks.landmark[8]
@@ -50,8 +51,8 @@ class HandTracker:
         pinch_close = pinch_dist / hand_scale < 0.35
 
         middle_up = HandTracker._finger_extended(hand_landmarks, 12)
-        ring_up   = HandTracker._finger_extended(hand_landmarks, 16)
-        pinky_up  = HandTracker._finger_extended(hand_landmarks, 20)
+        ring_up = HandTracker._finger_extended(hand_landmarks, 16)
+        pinky_up = HandTracker._finger_extended(hand_landmarks, 20)
 
         not_fist = middle_up or ring_up or pinky_up
 
@@ -59,18 +60,39 @@ class HandTracker:
             return 2
 
         # ---------- OPEN / CLOSED ----------
-        if hand_landmarks.landmark[4].x < hand_landmarks.landmark[20].x:
-            if hand_landmarks.landmark[4].x > hand_landmarks.landmark[3].x:
-                return 0
-        else:
-            if hand_landmarks.landmark[4].x < hand_landmarks.landmark[3].x:
-                return 0
+        pinky_dist = math.dist(
+            (hand_landmarks.landmark[20].x, hand_landmarks.landmark[20].y),
+            (hand_landmarks.landmark[17].x, hand_landmarks.landmark[17].y)
+        )
+        ring_dist = math.dist(
+            (hand_landmarks.landmark[16].x, hand_landmarks.landmark[16].y),
+            (hand_landmarks.landmark[13].x, hand_landmarks.landmark[13].y)
+        )
+        middle_dist = math.dist(
+            (hand_landmarks.landmark[12].x, hand_landmarks.landmark[12].y),
+            (hand_landmarks.landmark[9].x, hand_landmarks.landmark[9].y)
+        )
 
-        # skips index for quality, but we will se if its necessary
-        for tip in [12, 16, 20]:
-            if not HandTracker._finger_extended(hand_landmarks, tip):
-                return 0
+        hand_sideways = math.dist(
+            (hand_landmarks.landmark[6].x, hand_landmarks.landmark[6].y),
+            (hand_landmarks.landmark[19].x, hand_landmarks.landmark[19].y)
+        )
+
+        pinky_ratio = pinky_dist / hand_scale
+        ring_ratio = ring_dist / hand_scale
+        middle_ratio = middle_dist / hand_scale
 
 
+        closed_threshold = 0.5
+
+        if (
+                sum([
+                    pinky_ratio < closed_threshold,
+                    ring_ratio < closed_threshold,
+                    middle_ratio < closed_threshold
+                ]) >= 2
+                or hand_sideways > 100
+        ):
+            return 0
 
         return 1
