@@ -59,7 +59,7 @@ public:
             dy *= scale;
         }
 
-        double mag = std::sqrt(dx * dx + dy * dy);
+        mag = std::sqrt(dx * dx + dy * dy);
 
         if (mag < 0.002) {
             return py::make_tuple(pos_x, pos_y);

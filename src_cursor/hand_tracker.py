@@ -75,24 +75,28 @@ class HandTracker:
 
         hand_sideways = math.dist(
             (hand_landmarks.landmark[6].x, hand_landmarks.landmark[6].y),
-            (hand_landmarks.landmark[19].x, hand_landmarks.landmark[19].y)
+            (hand_landmarks.landmark[18].x, hand_landmarks.landmark[18].y)
         )
 
         pinky_ratio = pinky_dist / hand_scale
         ring_ratio = ring_dist / hand_scale
         middle_ratio = middle_dist / hand_scale
+        hand_sideways_ratio = hand_sideways / hand_scale
+        sideways = hand_sideways_ratio > 0.6
 
+        closed_threshold = 0.43
 
-        closed_threshold = 0.5
+        fingers_closed = sum([
+            pinky_ratio < closed_threshold,
+            ring_ratio < closed_threshold,
+            middle_ratio < closed_threshold
+        ])
 
-        if (
-                sum([
-                    pinky_ratio < closed_threshold,
-                    ring_ratio < closed_threshold,
-                    middle_ratio < closed_threshold
-                ]) >= 2
-                or hand_sideways > 100
-        ):
+        if fingers_closed >= 2:
             return 0
+        if sideways and fingers_closed >= 1:
+            return 0
+
+
 
         return 1
