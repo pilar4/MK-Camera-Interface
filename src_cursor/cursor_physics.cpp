@@ -20,18 +20,14 @@ public:
           min_speed(min_speed),
           sensitivity_exponent(sensitivity_exponent),
           reference_magnitude(reference_magnitude),
-          pos_x(0), pos_y(0),
-          vel_x(0), vel_y(0),
+          pos_x(0.0), pos_y(0.0),
+          vel_x(0.0), vel_y(0.0),
           clutched(false),
           input_active(false),
           initialized(false) {}
 
     py::tuple update(double dx, double dy, double dt) {
-        if (!initialized) {
-            return py::make_tuple(pos_x, pos_y);
-        }
-
-        if (clutched) {
+        if (!initialized || clutched) {
             return py::make_tuple(pos_x, pos_y);
         }
 
@@ -41,47 +37,37 @@ public:
             return py::make_tuple(pos_x, pos_y);
         }
 
-
-        // ---- Input shaping (non-linear sensitivity curve) ----
         double mag = std::sqrt(dx * dx + dy * dy);
 
         if (mag > 1e-9) {
-            // Pivoted power curve around reference_magnitude
-            double scaled_mag = reference_magnitude *
+            double scaled_mag =
+                reference_magnitude *
                 std::pow(mag / reference_magnitude, sensitivity_exponent);
 
-            double scale = scaled_mag / mag;
-
-            // Optional safety clamp
-            scale = std::min(scale, 5.0);
+            double scale = std::min(scaled_mag / mag, 5.0);
 
             dx *= scale;
             dy *= scale;
+            mag *= scale;
         }
-
-        mag = std::sqrt(dx * dx + dy * dy);
 
         if (mag < 0.002) {
             return py::make_tuple(pos_x, pos_y);
         }
 
-
-
-        double ax = dx * force_scale;
-        double ay = dy * force_scale;
-
-        //euler
-        vel_x += ax * dt;
-        vel_y += ay * dt;
+        vel_x += dx * force_scale * dt;
+        vel_y += dy * force_scale * dt;
 
         vel_x *= damping;
         vel_y *= damping;
 
-        // Clamp to max speed
         double speed = std::sqrt(vel_x * vel_x + vel_y * vel_y);
+
         if (speed > max_speed) {
-            vel_x = (vel_x / speed) * max_speed;
-            vel_y = (vel_y / speed) * max_speed;
+            double inv = max_speed / speed;
+            vel_x *= inv;
+            vel_y *= inv;
+            speed = max_speed;
         }
 
         if (speed < min_speed) {
@@ -89,8 +75,6 @@ public:
             return py::make_tuple(pos_x, pos_y);
         }
 
-
-        // Update position
         pos_x += vel_x * dt;
         pos_y += vel_y * dt;
 

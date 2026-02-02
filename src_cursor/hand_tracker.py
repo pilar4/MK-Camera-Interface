@@ -32,21 +32,16 @@ class HandTracker:
     def _finger_extended(hand, tip):
         return hand.landmark[tip].y < hand.landmark[tip - 2].y
 
+
     @staticmethod
     def fingers_state(hand_landmarks):
-        # 0 - closed
-        # 1 - opened
-        # 2 - pinch
-
-
-        # ---------- PINCH ----------
         thumb = hand_landmarks.landmark[4]
         index = hand_landmarks.landmark[8]
         wrist = hand_landmarks.landmark[0]
-        middle_mcp = hand_landmarks.landmark[9]
+        middle_hand = hand_landmarks.landmark[9]
 
         pinch_dist = math.dist((thumb.x, thumb.y), (index.x, index.y))
-        hand_scale = math.dist((wrist.x, wrist.y), (middle_mcp.x, middle_mcp.y))
+        hand_scale = math.dist((wrist.x, wrist.y), (middle_hand.x, middle_hand.y))
 
         pinch_close = pinch_dist / hand_scale < 0.35
 
@@ -59,7 +54,6 @@ class HandTracker:
         if pinch_close and not_fist:
             return 2
 
-        # ---------- OPEN / CLOSED ----------
         pinky_dist = math.dist(
             (hand_landmarks.landmark[20].x, hand_landmarks.landmark[20].y),
             (hand_landmarks.landmark[17].x, hand_landmarks.landmark[17].y)
@@ -73,18 +67,24 @@ class HandTracker:
             (hand_landmarks.landmark[9].x, hand_landmarks.landmark[9].y)
         )
 
-        hand_sideways = math.dist(
-            (hand_landmarks.landmark[6].x, hand_landmarks.landmark[6].y),
-            (hand_landmarks.landmark[18].x, hand_landmarks.landmark[18].y)
-        )
-
         pinky_ratio = pinky_dist / hand_scale
         ring_ratio = ring_dist / hand_scale
         middle_ratio = middle_dist / hand_scale
-        hand_sideways_ratio = hand_sideways / hand_scale
-        sideways = hand_sideways_ratio > 0.6
 
         closed_threshold = 0.43
+
+        tips = [
+            hand_landmarks.landmark[12],
+            hand_landmarks.landmark[16],
+            hand_landmarks.landmark[20],
+        ]
+        cx = sum(p.x for p in tips) / 3
+        cy = sum(p.y for p in tips) / 3
+        spread = max(
+            math.dist((p.x, p.y), (cx, cy))
+            for p in tips
+        )
+        spread_ratio = spread / hand_scale
 
         fingers_closed = sum([
             pinky_ratio < closed_threshold,
@@ -94,9 +94,7 @@ class HandTracker:
 
         if fingers_closed >= 2:
             return 0
-        if sideways and fingers_closed >= 1:
+        if spread_ratio < 0.20:
             return 0
-
-
 
         return 1

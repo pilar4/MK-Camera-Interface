@@ -47,7 +47,6 @@ def main():
 
 
 
-        # --- camera input --
         success, img = cap.read()
         if not success:
             break
