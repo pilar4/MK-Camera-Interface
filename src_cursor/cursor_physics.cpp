@@ -11,8 +11,8 @@ public:
         double damping,
         double max_speed,
         double min_speed,
-        double sensitivity_exponent = 1.0,
-        double reference_magnitude = 0.01
+        double sensitivity_exponent,
+        double reference_magnitude
     )
         : force_scale(force_scale),
           damping(damping),
@@ -117,11 +117,11 @@ private:
 PYBIND11_MODULE(cursor_cpp, m) {
     py::class_<CursorPhysics>(m, "CursorPhysics")
         .def(py::init<double, double, double, double, double>(),
-             py::arg("force_scale") = 300.0,
+             py::arg("force_scale") = 150.0,
              py::arg("damping") = 0.85,
              py::arg("max_speed") = 4000.0,
-             py::arg("min_speed") = 150.0,
-             py::arg("sensitivity_exponent") = 1.6,
+             py::arg("min_speed") = 100.0,
+             py::arg("sensitivity_exponent") = 1.2,
              py::arg("reference_magnitude") = 0.012)
         .def("update", &CursorPhysics::update)
         .def("clutch", &CursorPhysics::clutch)

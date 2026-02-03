@@ -80,6 +80,9 @@ class Cursor:
             dx = screen_x - self.prev_s_x
             dy = screen_y - self.prev_s_y
 
+            if abs(dx) < 5 and abs(dy) < 5:
+                dx = dy = 0.0
+
             true_x, true_y = self.physics.update(dx, dy, dt)
             pyautogui.moveTo(true_x, true_y)
 
