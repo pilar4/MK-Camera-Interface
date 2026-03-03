@@ -12,7 +12,9 @@ public:
         double max_speed,
         double min_speed,
         double sensitivity_exponent,
-        double reference_magnitude
+        double reference_magnitude,
+        double screen_w,
+        double screen_h
     )
         : force_scale(force_scale),
           damping(damping),
@@ -20,6 +22,8 @@ public:
           min_speed(min_speed),
           sensitivity_exponent(sensitivity_exponent),
           reference_magnitude(reference_magnitude),
+          screen_w(screen_w),
+          screen_h(screen_h),
           pos_x(0.0), pos_y(0.0),
           vel_x(0.0), vel_y(0.0),
           clutched(false),
@@ -78,6 +82,13 @@ public:
         pos_x += vel_x * dt;
         pos_y += vel_y * dt;
 
+        // Clamp to screen bounds and kill velocity on impact
+        // so input doesn't accumulate while pressed against the border
+        if (pos_x < 0.0)       { pos_x = 0.0;       vel_x = 0.0; }
+        if (pos_x > screen_w)  { pos_x = screen_w;  vel_x = 0.0; }
+        if (pos_y < 0.0)       { pos_y = 0.0;       vel_y = 0.0; }
+        if (pos_y > screen_h)  { pos_y = screen_h;  vel_y = 0.0; }
+
         return py::make_tuple(pos_x, pos_y);
     }
 
@@ -106,6 +117,8 @@ private:
     double min_speed;
     double sensitivity_exponent;
     double reference_magnitude;
+    double screen_w;
+    double screen_h;
 
     double pos_x, pos_y;
     double vel_x, vel_y;
@@ -116,13 +129,15 @@ private:
 
 PYBIND11_MODULE(cursor_cpp, m) {
     py::class_<CursorPhysics>(m, "CursorPhysics")
-        .def(py::init<double, double, double, double, double>(),
+        .def(py::init<double, double, double, double, double, double, double, double>(),
              py::arg("force_scale") = 150.0,
              py::arg("damping") = 0.85,
              py::arg("max_speed") = 4000.0,
              py::arg("min_speed") = 100.0,
              py::arg("sensitivity_exponent") = 1.2,
-             py::arg("reference_magnitude") = 0.012)
+             py::arg("reference_magnitude") = 0.012,
+             py::arg("screen_w") = 1920.0,
+             py::arg("screen_h") = 1080.0)
         .def("update", &CursorPhysics::update)
         .def("clutch", &CursorPhysics::clutch)
         .def("unclutch", &CursorPhysics::unclutch)

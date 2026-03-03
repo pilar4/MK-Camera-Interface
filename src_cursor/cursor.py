@@ -34,7 +34,7 @@ class Cursor:
         pyautogui.PAUSE = 0
         pyautogui.FAILSAFE = False
 
-        self.physics = cursor_cpp.CursorPhysics()
+        self.physics = cursor_cpp.CursorPhysics(screen_w=screen_w, screen_h=screen_h)
 
         self.last_time = time.time()
         self.prev_s_x = None
